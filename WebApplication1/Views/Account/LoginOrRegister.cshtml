@@ -1,0 +1,43 @@
+@model AutoAdsWebApp.Models.AccountViewModel
+@{
+    Layout = null;
+}
+<div class="container">
+    <h3>Вход</h3>
+    @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+    {
+        <div class="mb-3">
+            @Html.LabelFor(m => m.LoginViewModel.Login)
+            @Html.TextBoxFor(m => m.LoginViewModel.Login, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.LoginViewModel.Login)
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(m => m.LoginViewModel.Password)
+            @Html.PasswordFor(m => m.LoginViewModel.Password, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.LoginViewModel.Password)
+        </div>
+        <button type="submit" class="btn btn-primary">Войти</button>
+    }
+
+    <hr />
+    <h3>Регистрация</h3>
+    @using (Html.BeginForm("Register", "Account", FormMethod.Post))
+    {
+        <div class="mb-3">
+            @Html.LabelFor(m => m.RegisterViewModel.Login)
+            @Html.TextBoxFor(m => m.RegisterViewModel.Login, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.RegisterViewModel.Login)
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(m => m.RegisterViewModel.Password)
+            @Html.PasswordFor(m => m.RegisterViewModel.Password, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.RegisterViewModel.Password)
+        </div>
+        <div class="mb-3">
+            @Html.LabelFor(m => m.RegisterViewModel.RepeatPassword)
+            @Html.PasswordFor(m => m.RegisterViewModel.RepeatPassword, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.RegisterViewModel.RepeatPassword)
+        </div>
+        <button type="submit" class="btn btn-success">Зарегистрироваться</button>
+    }
+</div>

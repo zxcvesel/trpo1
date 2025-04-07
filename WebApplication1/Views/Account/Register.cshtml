@@ -1,0 +1,30 @@
+@model AutoAdsWebApp.Models.RegisterViewModel
+
+@{
+    ViewBag.Title = "Регистрация";
+}
+
+<h2>Регистрация</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.LabelFor(m => m.Login)
+    @Html.TextBoxFor(m => m.Login)
+    @Html.ValidationMessageFor(m => m.Login)
+
+    <br />
+
+    @Html.LabelFor(m => m.Password)
+    @Html.PasswordFor(m => m.Password)
+    @Html.ValidationMessageFor(m => m.Password)
+
+    <br />
+
+    @Html.LabelFor(m => m.RepeatPassword)
+    @Html.PasswordFor(m => m.RepeatPassword)
+    @Html.ValidationMessageFor(m => m.RepeatPassword)
+
+    <br />
+
+    <button type="submit">Зарегистрироваться</button>
+}
