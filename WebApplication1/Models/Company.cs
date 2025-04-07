@@ -16,5 +16,6 @@ namespace AutoAdsWebApp.Models
         public string Reviews { get; set; }
 
         public string Image { get; set; } // путь к изображению
+
     }
 }

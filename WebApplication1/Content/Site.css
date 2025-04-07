@@ -28,3 +28,16 @@ textarea {
     .card:hover {
         box-shadow: 0 0 11px rgba(33,33,33,.2);
     }
+
+<style >
+/* Стили для активной кнопки */
+.navbar-nav .active {
+    border-bottom: 2px solid #fff;
+}
+
+/* Плавное переключение контента */
+#adsContent, #accountContent {
+    transition: opacity 0.3s ease;
+}
+
+</style >

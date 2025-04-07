@@ -132,13 +132,14 @@
     <Compile Include="Controllers\CompaniesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\OrdersController.cs" />
+    <Compile Include="Controllers\ReviewsController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202503302125565_InitialCreate.cs" />
-    <Compile Include="Migrations\202503302125565_InitialCreate.Designer.cs">
-      <DependentUpon>202503302125565_InitialCreate.cs</DependentUpon>
+    <Compile Include="Migrations\202504071451067_InitialCreate.cs" />
+    <Compile Include="Migrations\202504071451067_InitialCreate.Designer.cs">
+      <DependentUpon>202504071451067_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Ad.cs" />
@@ -146,13 +147,14 @@
     <Compile Include="Models\Category.cs" />
     <Compile Include="Models\Company.cs" />
     <Compile Include="Models\Order.cs" />
+    <Compile Include="Models\Rewiew.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Data\AutoAdsDB.mdf" />
-    <Content Include="App_Data\AutoAdsDB_log.ldf">
-      <DependentUpon>AutoAdsDB.mdf</DependentUpon>
+    <Content Include="App_Data\AutoAdsDb.mdf" />
+    <Content Include="App_Data\AutoAdsDb_log.ldf">
+      <DependentUpon>AutoAdsDb.mdf</DependentUpon>
     </Content>
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -229,11 +231,11 @@
     <Content Include="Views\Ads\Details.cshtml" />
     <Content Include="Views\Ads\Edit.cshtml" />
     <Content Include="Views\Ads\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\202503302125565_InitialCreate.resx">
-      <DependentUpon>202503302125565_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
+    <Content Include="Views\Reviews\Create.cshtml" />
+    <Content Include="Views\Reviews\Delete.cshtml" />
+    <Content Include="Views\Reviews\Details.cshtml" />
+    <Content Include="Views\Reviews\Edit.cshtml" />
+    <Content Include="Views\Reviews\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />
@@ -261,6 +263,11 @@
     <Content Include="Scripts\bootstrap.bundle.js.map" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\202504071451067_InitialCreate.resx">
+      <DependentUpon>202504071451067_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

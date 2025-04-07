@@ -13,7 +13,7 @@ namespace AutoAdsWebApp.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202503302125565_InitialCreate"; }
+            get { return "202504071451067_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source

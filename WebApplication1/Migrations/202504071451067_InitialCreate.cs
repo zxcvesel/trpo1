@@ -42,6 +42,7 @@
                         Name = c.String(nullable: false),
                         Rating = c.Double(nullable: false),
                         Reviews = c.String(),
+                        Image = c.String(),
                     })
                 .PrimaryKey(t => t.Id);
             
@@ -72,18 +73,41 @@
                     })
                 .PrimaryKey(t => t.Id);
             
+            CreateTable(
+                "dbo.Reviews",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        CompanyId = c.Int(nullable: false),
+                        UserId = c.Int(nullable: false),
+                        Rating = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        Comment = c.String(maxLength: 1000),
+                        CreatedAt = c.DateTime(nullable: false),
+                        IsApproved = c.Boolean(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.Companies", t => t.CompanyId, cascadeDelete: true)
+                .ForeignKey("dbo.Users", t => t.UserId, cascadeDelete: true)
+                .Index(t => t.CompanyId)
+                .Index(t => t.UserId);
+            
         }
         
         public override void Down()
         {
+            DropForeignKey("dbo.Reviews", "UserId", "dbo.Users");
+            DropForeignKey("dbo.Reviews", "CompanyId", "dbo.Companies");
             DropForeignKey("dbo.Orders", "UserId", "dbo.Users");
             DropForeignKey("dbo.Orders", "AdId", "dbo.Ads");
             DropForeignKey("dbo.Ads", "CompanyId", "dbo.Companies");
             DropForeignKey("dbo.Ads", "CategoryId", "dbo.Categories");
+            DropIndex("dbo.Reviews", new[] { "UserId" });
+            DropIndex("dbo.Reviews", new[] { "CompanyId" });
             DropIndex("dbo.Orders", new[] { "AdId" });
             DropIndex("dbo.Orders", new[] { "UserId" });
             DropIndex("dbo.Ads", new[] { "CategoryId" });
             DropIndex("dbo.Ads", new[] { "CompanyId" });
+            DropTable("dbo.Reviews");
             DropTable("dbo.Users");
             DropTable("dbo.Orders");
             DropTable("dbo.Companies");

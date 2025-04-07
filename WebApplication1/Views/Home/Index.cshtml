@@ -1,11 +1,75 @@
-﻿<div class="container my-5 d-flex align-items-center">
-    <div class="col-md-6">
-        <h2>Здесь могла быть ваша реклама</h2>
-        <p>Сайт информационно-рекламного агентства для автобизнеса Ставрополя РИА "АРС"</p>
-        <a class="btn btn-dark me-2" href="#">Просмотр</a>
-        <a class="btn btn-outline-dark" href="#">Искать</a>
+﻿@{
+    ViewBag.Title = "Главная";
+}
+
+<div class="container my-4">
+    <!-- Контент "Реклама" (видим по умолчанию) -->
+    <div id="adsContent">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="fw-bold mb-3">Здесь могла быть ваша реклама</h1>
+                <p class="lead mb-4">Сайт информационно-рекламного агентства для автобизнеса Ставрополя РИА "АРС"</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-dark px-4 py-2" href="/Companies">Просмотр компаний</a>
+                    <button class="btn btn-outline-dark px-4 py-2" data-bs-toggle="modal" data-bs-target="#searchModal">Поиск</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <img src="~/images/car.jpg" class="img-fluid rounded shadow" alt="Автомобиль">
+            </div>
+        </div>
     </div>
-    <div class="col-md-6">
-        <img src="~/images/car.jpg" class="img-fluid rounded" alt="Реклама">
+
+    <!-- Контент "Личный кабинет" (скрыт) -->
+    <div id="accountContent" class="d-none">
+        <div class="row">
+            <div class="col-md-6">
+                <h2 class="fw-bold mb-4">Личный кабинет</h2>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <p>Добро пожаловать, @User.Identity.Name!</p>
+                            <a href="/Account/Logout" class="btn btn-danger">Выйти</a>
+                        }
+                        else
+                        {
+                            <p>Для доступа войдите в систему</p>
+                            <a href="/Account/Login" class="btn btn-primary">Войти</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Функция переключения
+        function switchTab(tabName) {
+            // Скрываем всё
+            document.getElementById('adsContent').classList.add('d-none');
+            document.getElementById('accountContent').classList.add('d-none');
+
+            // Показываем нужное
+            document.getElementById(tabName + 'Content').classList.remove('d-none');
+
+            // Обновляем активное состояние в навбаре
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.getElementById(tabName + 'NavLink').classList.add('active');
+
+            // Для главной страницы - предотвращаем переход по ссылке
+            return false;
+        }
+
+        // При загрузке страницы активируем текущую вкладку
+        document.addEventListener('DOMContentLoaded', function () {
+            // Если URL содержит хэш (#ads или #account)
+            const hash = window.location.hash.substring(1);
+            if (hash === 'ads' || hash === 'account') {
+                switchTab(hash);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,1 @@
+﻿ALTER DATABASE AutoAdsDB COLLATE Cyrillic_General_CI_AS;
