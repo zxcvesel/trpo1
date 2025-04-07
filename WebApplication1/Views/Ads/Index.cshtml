@@ -1,0 +1,34 @@
+﻿@model IEnumerable<AutoAdsWebApp.Models.Ad>
+
+<h2 class="text-center mt-4">Список объявлений</h2>
+
+<table class="table table-bordered table-striped mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Цена</th>
+            <th>Категория</th>
+            <th>Компания</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ad in Model)
+        {
+            <tr>
+                <td>@ad.Title</td>
+                <td>@ad.Description</td>
+                <td>@ad.Price ₽</td>
+                <td>@ad.Category.Name</td>
+                <td>@ad.Company.Name</td>
+                <td>
+                    <a class="btn btn-primary btn-sm" href="@Url.Action("Edit", new { id = ad.Id })">Редактировать</a>
+                    <a class="btn btn-danger btn-sm" href="@Url.Action("Delete", new { id = ad.Id })">Удалить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-success mt-3" href="@Url.Action("Create")">Добавить объявление</a>

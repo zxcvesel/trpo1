@@ -1,0 +1,35 @@
+﻿@model AutoAdsWebApp.Models.Ad
+
+<h2 class="text-center mt-4">Добавить объявление</h2>
+
+<div class="container">
+    <form asp-action="Create" method="post" class="border p-4 shadow-sm rounded bg-light">
+        <div class="mb-3">
+            <label class="form-label">Название</label>
+            <input asp-for="Title" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Описание</label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Цена</label>
+            <input asp-for="Price" type="number" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Категория</label>
+            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select" required></select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Компания</label>
+            <select asp-for="CompanyId" asp-items="ViewBag.Companies" class="form-select" required></select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">Назад</a>
+    </form>
+</div>
