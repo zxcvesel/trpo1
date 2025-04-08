@@ -1,47 +1,85 @@
-﻿@model AutoAdsWebApp.Models.AccountViewModel
-@{
-    Layout = null;
+﻿@{
+    bool isLoginActive = ViewBag.IsLoginActive ?? true;
 }
 
-<h2>Вход</h2>
-@using (Html.BeginForm("Login", "Account", FormMethod.Post))
-{
-    <div>
-        @Html.LabelFor(m => m.LoginViewModel.Login, "Логин")
-        @Html.TextBoxFor(m => m.LoginViewModel.Login, new { @class = "form-control" })
-        @Html.ValidationMessageFor(m => m.LoginViewModel.Login)
-    </div>
-    <div>
-        @Html.LabelFor(m => m.LoginViewModel.Password, "Пароль")
-        @Html.PasswordFor(m => m.LoginViewModel.Password, new { @class = "form-control" })
-        @Html.ValidationMessageFor(m => m.LoginViewModel.Password)
-    </div>
-    <button type="submit" class="btn btn-primary">Войти</button>
-}
+<div class="auth-tabs">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link @(isLoginActive ? "active" : "")"
+               href="#login"
+               data-bs-toggle="tab">Вход</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(!isLoginActive ? "active" : "")"
+               href="#register"
+               data-bs-toggle="tab">Регистрация</a>
+        </li>
+    </ul>
 
-<hr />
+    <div class="tab-content">
+        <!-- Вход -->
+        <div class="tab-pane fade @(isLoginActive ? "show active" : "")" id="login">
+            <form id="loginForm" onsubmit="authSubmit(this, '/Account/Login', 'loginError'); return false;">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label class="form-label">Логин</label>
+                    <input type="text" name="login" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Войти</button>
+                <div id="loginError" class="text-danger mt-2"></div>
+            </form>
+        </div>
 
-<h2>Регистрация</h2>
-@using (Html.BeginForm("Register", "Account", FormMethod.Post))
-{
-    <div>
-        @Html.LabelFor(m => m.RegisterViewModel.Login, "Логин")
-        @Html.TextBoxFor(m => m.RegisterViewModel.Login, new { @class = "form-control" })
-        @Html.ValidationMessageFor(m => m.RegisterViewModel.Login)
+        <!-- Регистрация -->
+        <div class="tab-pane fade @(!isLoginActive ? "show active" : "")" id="register">
+            <form id="registerForm" onsubmit="authSubmit(this, '/Account/Register', 'registerError'); return false;">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label class="form-label">Логин</label>
+                    <input type="text" name="login" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Повторите пароль</label>
+                    <input type="password" name="repeatPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Зарегистрироваться</button>
+                <div id="registerError" class="text-danger mt-2"></div>
+            </form>
+        </div>
     </div>
-    <div>
-        @Html.LabelFor(m => m.RegisterViewModel.Password, "Пароль")
-        @Html.PasswordFor(m => m.RegisterViewModel.Password, new { @class = "form-control" })
-        @Html.ValidationMessageFor(m => m.RegisterViewModel.Password)
-    </div>
-    <div>
-        @Html.LabelFor(m => m.RegisterViewModel.RepeatPassword, "Повторите пароль")
-        @Html.PasswordFor(m => m.RegisterViewModel.RepeatPassword, new { @class = "form-control" })
-        @Html.ValidationMessageFor(m => m.RegisterViewModel.RepeatPassword)
-    </div>
-    <button type="submit" class="btn btn-success">Зарегистрироваться</button>
-}
+</div>
 
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-}
+<script>
+    function authSubmit(form, url, errorElementId) {
+        const errorElement = document.getElementById(errorElementId);
+        errorElement.textContent = '';
+
+        fetch(url, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'RequestVerificationToken': form.querySelector('[name="__RequestVerificationToken"]').value
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#authModal').modal('hide');
+                    window.location.reload();
+                } else {
+                    errorElement.textContent = data.error || 'Ошибка сервера';
+                }
+            })
+            .catch(() => {
+                errorElement.textContent = 'Ошибка соединения';
+            });
+    }
+</script>

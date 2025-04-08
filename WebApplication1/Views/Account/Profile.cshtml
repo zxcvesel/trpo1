@@ -1,0 +1,90 @@
+﻿@{
+    ViewBag.Title = "Личный кабинет";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Левая колонка -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-person-circle" style="font-size: 4rem; color: #6c757d;"></i>
+                    </div>
+                    <h4>@User.Identity.Name</h4>
+                    <p class="text-muted">Пользователь</p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item active">
+                        <i class="bi bi-person me-2"></i>Профиль
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-heart me-2"></i>Избранное
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-gear me-2"></i>Настройки
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-megaphone me-2"></i>Реклама
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-box-arrow-right me-2"></i>Выйти
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Мои расклады</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        У вас пока нет сохраненных раскладов
+                    </div>
+
+                    <!-- Пример расклада -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6>Название расклада</h6>
+                            <p class="text-muted small mb-2">Дата создания: 15.05.2023</p>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Просмотреть
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .list-group-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .list-group-item:hover:not(.active) {
+                background-color: #f8f9fa;
+            }
+
+        .card {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .card-header {
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            font-weight: 500;
+        }
+    </style>
+}

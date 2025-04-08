@@ -1,93 +1,50 @@
-﻿using System.Linq;
-using System.Web;
+﻿using AutoAdsWebApp.Models;
+using System.Linq;
 using System.Web.Mvc;
-using AutoAdsWebApp.Models;
 using System.Web.Security;
 
-namespace AutoAdsWebApp.Controllers
+public class AccountController : Controller
 {
-    public class AccountController : Controller
+    private ApplicationDbContext db = new ApplicationDbContext();
+
+    // GET: Единая форма
+    public ActionResult LoginOrRegister()
     {
-        private ApplicationDbContext db = new ApplicationDbContext(); // Замени на свой контекст данных
-        public ActionResult LoginOrRegister()
+        ViewBag.IsLoginActive = true; // По умолчанию активна вкладка входа
+        return PartialView("LoginOrRegister");
+    }
+
+    [HttpPost]
+    public ActionResult Login(string login, string password)
+    {
+        var user = db.Users.FirstOrDefault(u => u.Login == login && u.Password == password);
+        if (user != null)
         {
-            var model = new AccountViewModel
-            {
-                LoginViewModel = new LoginViewModel(),
-                RegisterViewModel = new RegisterViewModel()
-            };
-
-            return View(model);
+            FormsAuthentication.SetAuthCookie(user.Login, false);
+            return Json(new { success = true });
         }
-        // GET: Account/Login
-        public ActionResult Login()
-        {
-            return View();
-        }
+        return Json(new { error = "Неверный логин или пароль" });
+    }
 
-        [HttpPost]
-        public ActionResult Login(LoginViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = db.Users.FirstOrDefault(u => u.Login == model.Login && u.Password == model.Password);
-                if (user != null)
-                {
-                    Session["UserId"] = user.Id;
-                    Session["UserLogin"] = user.Login;
-                    Session["UserRole"] = user.Role;
+    [HttpPost]
+    public ActionResult Register(string login, string password, string repeatPassword)
+    {
+        if (password != repeatPassword)
+            return Json(new { error = "Пароли не совпадают" });
 
-                    FormsAuthentication.SetAuthCookie(user.Login, false); // ← ДОБАВЬ ЭТО
+        if (db.Users.Any(u => u.Login == login))
+            return Json(new { error = "Логин уже занят" });
 
-                    return RedirectToAction("Profile", "Account");
-                }
-                ModelState.AddModelError("", "Неверный логин или пароль");
-            }
-            return View("Login",model);
-        }
+        db.Users.Add(new User { Login = login, Password = password, Role = "User" });
+        db.SaveChanges();
 
-        // GET: Account/Register
-        public ActionResult Register()
-        {
-            return View();
-        }
+        FormsAuthentication.SetAuthCookie(login, false);
+        return Json(new { success = true });
+    }
 
-        [HttpPost]
-        public ActionResult Register(RegisterViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var existingUser = db.Users.FirstOrDefault(u => u.Login == model.Login);
-                if (existingUser != null)
-                {
-                    ModelState.AddModelError("", "Пользователь с таким логином уже существует");
-                    return View(model);
-                }
-
-                var newUser = new User
-                {
-                    Login = model.Login,
-                    Password = model.Password,
-                    Role = "Buyer"
-                };
-
-                db.Users.Add(newUser);
-                db.SaveChanges();
-
-                return RedirectToAction("Login");
-            }
-            return View(model);
-        }
-
-        
-
-        public ActionResult Logout()
-        {
-            FormsAuthentication.SignOut();
-            Session.Clear(); 
-            return RedirectToAction("Login");
-        }
-
-
+    public ActionResult Logout()
+    {
+        FormsAuthentication.SignOut();
+        return RedirectToAction("Index", "Home");
     }
 }
