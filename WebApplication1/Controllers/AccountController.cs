@@ -1,4 +1,4 @@
-using System.Linq;
+п»їusing System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using AutoAdsWebApp.Models;
@@ -8,8 +8,17 @@ namespace AutoAdsWebApp.Controllers
 {
     public class AccountController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext(); // Замени на свой контекст данных
+        private ApplicationDbContext db = new ApplicationDbContext(); // Р—Р°РјРµРЅРё РЅР° СЃРІРѕР№ РєРѕРЅС‚РµРєСЃС‚ РґР°РЅРЅС‹С…
+        public ActionResult LoginOrRegister()
+        {
+            var model = new AccountViewModel
+            {
+                LoginViewModel = new LoginViewModel(),
+                RegisterViewModel = new RegisterViewModel()
+            };
 
+            return View(model);
+        }
         // GET: Account/Login
         public ActionResult Login()
         {
@@ -28,11 +37,13 @@ namespace AutoAdsWebApp.Controllers
                     Session["UserLogin"] = user.Login;
                     Session["UserRole"] = user.Role;
 
-                    return RedirectToAction("Index", "Home");
+                    FormsAuthentication.SetAuthCookie(user.Login, false); // в†ђ Р”РћР‘РђР’Р¬ Р­РўРћ
+
+                    return RedirectToAction("Profile", "Account");
                 }
-                ModelState.AddModelError("", "Неверный логин или пароль");
+                ModelState.AddModelError("", "РќРµРІРµСЂРЅС‹Р№ Р»РѕРіРёРЅ РёР»Рё РїР°СЂРѕР»СЊ");
             }
-            return View(model);
+            return View("Login",model);
         }
 
         // GET: Account/Register
@@ -49,7 +60,7 @@ namespace AutoAdsWebApp.Controllers
                 var existingUser = db.Users.FirstOrDefault(u => u.Login == model.Login);
                 if (existingUser != null)
                 {
-                    ModelState.AddModelError("", "Пользователь с таким логином уже существует");
+                    ModelState.AddModelError("", "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ С‚Р°РєРёРј Р»РѕРіРёРЅРѕРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚");
                     return View(model);
                 }
 
@@ -68,10 +79,15 @@ namespace AutoAdsWebApp.Controllers
             return View(model);
         }
 
+        
+
         public ActionResult Logout()
         {
-            Session.Clear();
+            FormsAuthentication.SignOut();
+            Session.Clear(); 
             return RedirectToAction("Login");
         }
+
+
     }
 }

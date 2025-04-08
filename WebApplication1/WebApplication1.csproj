@@ -257,7 +257,7 @@
     <Compile Include="Models\Ad.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Category.cs" />
-    <Compile Include="Models\Account.cs" />
+    <Compile Include="Models\AccountViewModel.cs" />
     <Compile Include="Models\Company.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\Rewiew.cs" />
@@ -351,6 +351,7 @@
     <Content Include="Views\Reviews\Index.cshtml" />
     <Content Include="Views\Account\LoginOrRegister.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
+    <Content Include="Views\Account\Register.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />
