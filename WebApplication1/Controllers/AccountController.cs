@@ -21,9 +21,18 @@ public class AccountController : Controller
         if (user != null)
         {
             FormsAuthentication.SetAuthCookie(user.Login, false);
-            return Json(new { success = true });
+            // Возвращаем URL для перенаправления
+            return Json(new
+            {
+                success = true,
+                redirectUrl = Url.Action("UserProfile", "Account")
+            });
         }
-        return Json(new { error = "Неверный логин или пароль" });
+        return Json(new
+        {
+            success = false,
+            error = "Неверный логин или пароль"
+        });
     }
 
     [HttpPost]
@@ -41,7 +50,12 @@ public class AccountController : Controller
         FormsAuthentication.SetAuthCookie(login, false);
         return Json(new { success = true });
     }
-
+    //[Authorize]
+    public ActionResult UserProfile()
+    {
+        // Можно добавить логику загрузки данных пользователя
+        return View();
+    }
     public ActionResult Logout()
     {
         FormsAuthentication.SignOut();

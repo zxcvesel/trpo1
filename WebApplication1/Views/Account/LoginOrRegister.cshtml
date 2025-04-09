@@ -61,25 +61,32 @@
     function authSubmit(form, url, errorElementId) {
         const errorElement = document.getElementById(errorElementId);
         errorElement.textContent = '';
+        errorElement.style.display = 'none';
 
         fetch(url, {
             method: 'POST',
             body: new FormData(form),
             headers: {
-                'RequestVerificationToken': form.querySelector('[name="__RequestVerificationToken"]').value
+                'RequestVerificationToken': form.querySelector('[name="__RequestVerificationToken"]').value,
+                'Accept': 'application/json'
             }
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    $('#authModal').modal('hide');
-                    window.location.reload();
-                } else {
-                    errorElement.textContent = data.error || 'Ошибка сервера';
-                }
-            })
-            .catch(() => {
-                errorElement.textContent = 'Ошибка соединения';
-            });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#authModal').modal('hide');
+                // Перенаправление на полученный URL или на профиль по умолчанию
+                const redirectUrl = data.redirectUrl || '@Url.Action("UserProfile", "Account")';
+                window.location.href = redirectUrl;
+            } else {
+                errorElement.textContent = data.error || 'Ошибка сервера';
+                errorElement.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            errorElement.textContent = 'Ошибка соединения';
+            errorElement.style.display = 'block';
+            console.error('Ошибка:', error);
+        });
     }
 </script>
