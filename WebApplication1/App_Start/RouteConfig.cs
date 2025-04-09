@@ -14,15 +14,17 @@ namespace WebApplication1
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "Profile",
+                url: "account/userprofile",
+                defaults: new { controller = "Account", action = "UserProfile" }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
-            routes.MapRoute(
-                name: "Profile",
-                url: "account/profile",
-                defaults: new { controller = "Account", action = "UserProfile" }
-            );
+            
 
         }
     }
