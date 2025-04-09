@@ -18,23 +18,36 @@ public class AccountController : Controller
     [HttpPost]
     public ActionResult Login(string login, string password)
     {
+        // Находим пользователя в базе данных
         var user = db.Users.FirstOrDefault(u => u.Login == login && u.Password == password);
+
         if (user != null)
         {
+            // Создаем билет аутентификации
             FormsAuthentication.SetAuthCookie(user.Login, false);
+
+            // Возвращаем данные пользователя
             return Json(new
             {
                 success = true,
-                redirectUrl = Url.Action("UserProfile", "Account")
+                redirectUrl = Url.Action("UserProfile", "Account"),
+                userData = new
+                {
+                    id = user.Id,
+                    login = user.Login,
+                    role = user.Role,
+
+                }
             });
         }
+
+        // Возвращаем ошибку, если аутентификация не удалась
         return Json(new
         {
             success = false,
             error = "Неверный логин или пароль"
         });
     }
-
     [HttpPost]
     public ActionResult Register(string login, string password, string repeatPassword)
     {
