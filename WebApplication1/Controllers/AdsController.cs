@@ -15,9 +15,51 @@ namespace AutoAdsWebApp.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Ads
-        public ActionResult Index()
+        public ActionResult Index(string searchString, string sortOrder)
         {
-            var ads = db.Ads.Include(a => a.Category).Include(a => a.Company);
+            ViewBag.TitleSort = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
+            ViewBag.PriceSort = sortOrder == "price" ? "price_desc" : "price";
+            ViewBag.CompanySort = sortOrder == "company" ? "company_desc" : "company";
+            ViewBag.CategorySort = sortOrder == "category" ? "category_desc" : "category";
+
+            var ads = db.Ads.Include(a => a.Company).Include(a => a.Category);
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                ads = ads.Where(a => a.Title.Contains(searchString)
+                                 || a.Description.Contains(searchString)
+                                 || a.Company.Name.Contains(searchString)
+                                 || a.Category.Name.Contains(searchString));
+            }
+
+            switch (sortOrder)
+            {
+                case "title_desc":
+                    ads = ads.OrderByDescending(a => a.Title);
+                    break;
+                case "price":
+                    ads = ads.OrderBy(a => a.Price);
+                    break;
+                case "price_desc":
+                    ads = ads.OrderByDescending(a => a.Price);
+                    break;
+                case "company":
+                    ads = ads.OrderBy(a => a.Company.Name);
+                    break;
+                case "company_desc":
+                    ads = ads.OrderByDescending(a => a.Company.Name);
+                    break;
+                case "category":
+                    ads = ads.OrderBy(a => a.Category.Name);
+                    break;
+                case "category_desc":
+                    ads = ads.OrderByDescending(a => a.Category.Name);
+                    break;
+                default:
+                    ads = ads.OrderBy(a => a.Title);
+                    break;
+            }
+
             return View(ads.ToList());
         }
 
@@ -123,6 +165,8 @@ namespace AutoAdsWebApp.Controllers
             db.SaveChanges();
             return RedirectToAction("Index");
         }
+
+
 
         protected override void Dispose(bool disposing)
         {

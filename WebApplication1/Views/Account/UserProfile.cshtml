@@ -83,6 +83,10 @@
         $(document).ready(function() {
             // Загрузка секции
             function loadSection(section) {
+                // Блокируем повторные запросы
+                if ($('#profileContent').hasClass('loading')) return;
+                $('#profileContent').addClass('loading');
+
                 $('.nav-item').removeClass('active');
                 $(`[data-section="${section}"]`).addClass('active');
 
@@ -94,10 +98,30 @@
                     </div>
                 `);
 
-                $.get(`/Account/Load${section.charAt(0).toUpperCase() + section.slice(1)}`, function(data) {
-                    $('#profileContent').html(data);
-                    initSectionScripts(section);
-                });
+                $.get(`/Account/Load${section.charAt(0).toUpperCase() + section.slice(1)}`)
+                    .done(function (data) {
+                        $('#profileContent').html(data).removeClass('loading');
+                    })
+                    .fail(function (xhr) {
+                        let errorMsg = "Ошибка загрузки данных";
+                        if (xhr.responseText) {
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                errorMsg = response.message || errorMsg;
+                            } catch (e) {
+                                errorMsg = xhr.responseText;
+                            }
+                        }
+                        $('#profileContent').html(`
+                            <div class="alert alert-danger">
+                                ${errorMsg}
+                                <button onclick="loadSection('${section}')" 
+                                        class="btn btn-sm btn-outline-secondary ms-2">
+                                    Повторить
+                                </button>
+                            </div>
+                        `).removeClass('loading');
+                    });
             }
 
             // Инициализация скриптов для секции
@@ -125,6 +149,42 @@
                         }
                     });
                 });
+
+                // Обработчик кнопки редактирования
+                $(document).on('click', '.edit-review', function() {
+                    const reviewId = $(this).data('review-id');
+                    const reviewItem = $('#review-' + reviewId);
+                    const rating = reviewItem.find('.text-warning i').length;
+                    const comment = reviewItem.find('.review-comment').text();
+
+                    $('#editReviewId').val(reviewId);
+                    $('#editRatingValue').val(rating);
+                    $('#editComment').val(comment);
+
+                    // Установка звезд рейтинга
+                    $('.edit-rating-star').removeClass('active');
+                    $('.edit-rating-star').each(function() {
+                        if ($(this).data('value') <= rating) {
+                            $(this).addClass('active');
+                        }
+                    });
+
+                    $('#editReviewModal').modal('show');
+                });
+
+                // Сохранение изменений
+                $('#saveEditReview').click(function() {
+                    const formData = $('#editReviewForm').serialize();
+
+                    $.post('@Url.Action("EditReview", "Account")', formData, function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#editReviewModal').modal('hide');
+                            loadSection('reviews');
+                        }
+                    });
+                });
+
 
                 $('.delete-review').click(function() {
                     if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {

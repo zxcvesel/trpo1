@@ -15,9 +15,45 @@ namespace AutoAdsWebApp.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: Reviews
-        public ActionResult Index()
+        public ActionResult Index(string searchString, string sortOrder)
         {
+            ViewBag.DateSort = sortOrder == "date" ? "date_desc" : "date";
+            ViewBag.RatingSort = sortOrder == "rating" ? "rating_desc" : "rating";
+            ViewBag.CompanySort = sortOrder == "company" ? "company_desc" : "company";
+
             var reviews = db.Reviews.Include(r => r.Company).Include(r => r.User);
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                reviews = reviews.Where(r => r.Comment.Contains(searchString)
+                                        || r.Company.Name.Contains(searchString));
+            }
+
+            switch (sortOrder)
+            {
+                case "date":
+                    reviews = reviews.OrderBy(r => r.CreatedAt);
+                    break;
+                case "date_desc":
+                    reviews = reviews.OrderByDescending(r => r.CreatedAt);
+                    break;
+                case "rating":
+                    reviews = reviews.OrderBy(r => r.Rating);
+                    break;
+                case "rating_desc":
+                    reviews = reviews.OrderByDescending(r => r.Rating);
+                    break;
+                case "company":
+                    reviews = reviews.OrderBy(r => r.Company.Name);
+                    break;
+                case "company_desc":
+                    reviews = reviews.OrderByDescending(r => r.Company.Name);
+                    break;
+                default:
+                    reviews = reviews.OrderByDescending(r => r.CreatedAt);
+                    break;
+            }
+
             return View(reviews.ToList());
         }
 
@@ -123,6 +159,7 @@ namespace AutoAdsWebApp.Controllers
             db.SaveChanges();
             return RedirectToAction("Index");
         }
+
 
         protected override void Dispose(bool disposing)
         {

@@ -7,27 +7,114 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Список компаний</h2>
-        @Html.ActionLink("Добавить компанию", "Create", null, new { @class = "btn btn-dark" })
+        <div>
+            @Html.ActionLink("Добавить компанию", "Create", null, new { @class = "btn btn-dark me-2" })
+            @Html.ActionLink("Скачать PDF", "GeneratePdf", "Companies", null, new { @class = "btn btn-primary" })
+        </div>
     </div>
 
+    <!-- Поиск и сортировка -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            @using (Html.BeginForm("Index", "Companies", FormMethod.Get))
+            {
+                <div class="input-group">
+                    @Html.TextBox("searchString", ViewBag.CurrentFilter as string, new { @class = "form-control", placeholder = "Поиск по названию..." })
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            }
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="btn-group">
+                @Html.ActionLink("Название ▲", "Index", new { sortOrder = ViewBag.NameSort, searchString = ViewBag.CurrentFilter }, new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Рейтинг ▼", "Index", new { sortOrder = ViewBag.RatingSort, searchString = ViewBag.CurrentFilter }, new { @class = "btn btn-outline-secondary" })
+            </div>
+        </div>
+    </div>
+
+    <!-- Список компаний -->
     <div class="row">
-        @foreach (var item in Model)
+        @if (Model.Any())
         {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <img src="~/images/@item.Image" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@item.Name" />
-                    <div class="card-body">
-                        <h5 class="card-title">@item.Name</h5>
-                        <p class="card-text">Рейтинг: @item.Rating</p>
-                        <p class="card-text">Отзывы: @item.Reviews</p>
+            foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@Url.Content("~/images/" + item.Image)" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@item.Name" onerror="this.src='@Url.Content("~/images/default-company.png")'" />
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text">
+                                    <span class="text-warning">
+                                        @for (int i = 0; i < 5; i++)
+                                        {
+                                            <i class="bi @(i < item.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                        }
+                                    </span>
+                                </p>
+                                <p class="card-text text-muted">@item.Reviews </p>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            @Html.ActionLink("Редактировать", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary btn-sm" })
+                            @Html.ActionLink("Детали", "Details", new { id = item.Id }, new { @class = "btn btn-outline-info btn-sm" })
+                            @Html.ActionLink("Удалить", "Delete", new { id = item.Id }, new { @class = "btn btn-outline-danger btn-sm" })
+                        </div>
                     </div>
-                    <div class="card-footer d-flex justify-content-between">
-                        @Html.ActionLink("Редактировать", "Edit", new { id = item.Id }, new { @class = "btn btn-outline-primary btn-sm" })
-                        @Html.ActionLink("Детали", "Details", new { id = item.Id }, new { @class = "btn btn-outline-info btn-sm" })
-                        @Html.ActionLink("Удалить", "Delete", new { id = item.Id }, new { @class = "btn btn-outline-danger btn-sm" })
-                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    Компании не найдены. @Html.ActionLink("Добавить новую компанию", "Create")
                 </div>
             </div>
         }
     </div>
 </div>
+
+@section Styles {
+    <style>
+        .card {
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            }
+
+        .text-warning {
+            color: #ffc107;
+        }
+
+        .bi-star-fill:before {
+            content: "\f586";
+        }
+
+        .bi-star:before {
+            content: "\f586";
+            opacity: 0.5;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Подсветка активной сортировки
+            const sortOrder = '@ViewBag.CurrentSort';
+            if (sortOrder === 'name_desc') {
+                $('a[href*="sortOrder=name_desc"]').addClass('active');
+            } else if (sortOrder === 'rating') {
+                $('a[href*="sortOrder=rating"]').addClass('active');
+            } else if (sortOrder === 'rating_desc') {
+                $('a[href*="sortOrder=rating_desc"]').addClass('active');
+            }
+        });
+    </script>
+}

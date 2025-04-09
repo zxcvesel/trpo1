@@ -1,63 +1,78 @@
 ﻿@model IEnumerable<AutoAdsWebApp.Models.Review>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Отзывы";
 }
 
-<h2>Index</h2>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Список отзывов</h2>
+        @Html.ActionLink("Добавить отзыв", "Create", null, new { @class = "btn btn-dark" })
+    </div>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Company.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User.Login)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Rating)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Comment)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.IsApproved)
-        </th>
-        <th></th>
-    </tr>
+    <!-- Поиск и сортировка -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            @using (Html.BeginForm("Index", "Reviews", FormMethod.Get))
+            {
+                <div class="input-group">
+                    @Html.TextBox("searchString", ViewBag.CurrentFilter as string,
+                                new { @class = "form-control", placeholder = "Поиск по тексту или компании..." })
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            }
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="btn-group">
+                @Html.ActionLink("Дата", "Index",
+                    new { sortOrder = ViewBag.DateSort, searchString = ViewBag.CurrentFilter },
+                    new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Рейтинг", "Index",
+                    new { sortOrder = ViewBag.RatingSort, searchString = ViewBag.CurrentFilter },
+                    new { @class = "btn btn-outline-secondary" })
+                @Html.ActionLink("Компания", "Index",
+                    new { sortOrder = ViewBag.CompanySort, searchString = ViewBag.CurrentFilter },
+                    new { @class = "btn btn-outline-secondary" })
+            </div>
+        </div>
+    </div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Company.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.Login)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Rating)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Comment)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.CreatedAt)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.IsApproved)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
-        </td>
-    </tr>
-}
-
-</table>
+    <!-- Таблица отзывов -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Компания</th>
+                    <th>Рейтинг</th>
+                    <th>Текст отзыва</th>
+                    <th>Дата</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.Company.Name)</td>
+                        <td>
+                            <span class="text-warning">
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    <i class="bi @(i < item.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                }
+                            </span>
+                        </td>
+                        <td>@Html.DisplayFor(modelItem => item.Comment)</td>
+                        <td>@item.CreatedAt.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            @Html.ActionLink("Редактировать", "Edit", new { id = item.Id }, new { @class = "btn btn-sm btn-outline-primary" })
+                            @Html.ActionLink("Удалить", "Delete", new { id = item.Id }, new { @class = "btn btn-sm btn-outline-danger" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -16,6 +16,7 @@ namespace WebApplication1
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
         }
 
         protected void Application_BeginRequest()
@@ -23,5 +24,6 @@ namespace WebApplication1
             Response.ContentType = "text/html; charset=utf-8";
             Response.Charset = "utf-8";
         }
+
     }
 }

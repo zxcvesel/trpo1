@@ -9,7 +9,7 @@
         {
             foreach (var review in Model.Reviews)
             {
-                <div class="card mb-3 review-item" data-id="@review.Id">
+                <div class="card mb-3 review-item" data-id="@review.Id" id="review-@review.Id">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5>@review.CompanyName</h5>
@@ -20,9 +20,12 @@
                                 }
                             </div>
                         </div>
-                        <p class="mt-2">@review.Comment</p>
+                        <p class="mt-2 review-comment">@review.Comment</p>
                         <small class="text-muted">Оставлен: @review.Date.ToString("dd.MM.yyyy")</small>
                         <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-primary edit-review" data-review-id="@review.Id">
+                                <i class="bi bi-pencil"></i> Редактировать
+                            </button>
                             <button class="btn btn-sm btn-outline-danger delete-review">
                                 <i class="bi bi-trash"></i> Удалить
                             </button>
@@ -50,7 +53,159 @@
         @using (Html.BeginForm("AddReview", "Account", FormMethod.Post, new { id = "addReviewForm" }))
         {
             @Html.AntiForgeryToken()
-            <!-- Форма остаётся без изменений -->
+
+            <div class="mb-3">
+                <label class="form-label">Компания</label>
+                <select name="CompanyId" class="form-select" required>
+                    <option value="">Выберите компанию</option>
+                    @foreach (var company in Model.Companies)
+                    {
+                        <option value="@company.Id">@company.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Рейтинг</label>
+                <div class="rating-stars">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="bi bi-star rating-star" data-value="@i"></i>
+                    }
+                </div>
+                <input type="hidden" name="Rating" id="ratingValue" value="5" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Комментарий</label>
+                <textarea name="Comment" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Отправить отзыв</button>
         }
     </div>
 </div>
+
+<!-- Модальное окно для редактирования -->
+<div class="modal fade" id="editReviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактировать отзыв</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editReviewForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="editReviewId">
+
+                    <div class="mb-3">
+                        <label class="form-label">Рейтинг</label>
+                        <div class="rating-stars">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="bi bi-star edit-rating-star" data-value="@i"></i>
+                            }
+                        </div>
+                        <input type="hidden" name="Rating" id="editRatingValue" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Комментарий</label>
+                        <textarea name="Comment" id="editComment" class="form-control" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveEditReview">Сохранить изменения</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rating-stars {
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .rating-star, .edit-rating-star {
+        color: #ddd;
+    }
+
+        .rating-star.active, .edit-rating-star.active {
+            color: #ffc107;
+        }
+</style>
+
+<script>
+    $(document).ready(function() {
+        // Инициализация звезд рейтинга
+        $('.rating-star').click(function() {
+            const value = $(this).data('value');
+            $('#ratingValue').val(value);
+            $('.rating-star').removeClass('active');
+            $(this).prevAll().addBack().addClass('active');
+        });
+
+        // Инициализация звезд по умолчанию
+        $('.rating-star').first().prevAll().addBack().addClass('active');
+
+        // Обработчик кнопки редактирования
+        $('.edit-review').click(function() {
+            const reviewId = $(this).data('review-id');
+            const reviewItem = $('#review-' + reviewId);
+            const rating = reviewItem.find('.text-warning i').length;
+            const comment = reviewItem.find('.review-comment').text();
+
+            $('#editReviewId').val(reviewId);
+            $('#editRatingValue').val(rating);
+            $('#editComment').val(comment);
+
+            // Установка звезд рейтинга
+            $('.edit-rating-star').removeClass('active');
+            $('.edit-rating-star').each(function() {
+                if ($(this).data('value') <= rating) {
+                    $(this).addClass('active');
+                }
+            });
+
+            $('#editReviewModal').modal('show');
+        });
+
+        // Звезды рейтинга в модальном окне
+        $('.edit-rating-star').click(function() {
+            const value = $(this).data('value');
+            $('#editRatingValue').val(value);
+            $('.edit-rating-star').removeClass('active');
+            $(this).prevAll().addBack().addClass('active');
+        });
+
+        // Сохранение изменений
+        $('#saveEditReview').click(function() {
+            const formData = $('#editReviewForm').serialize();
+
+            $.post('@Url.Action("EditReview", "Account")', formData, function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    $('#editReviewModal').modal('hide');
+                    loadSection('reviews'); // Перезагружаем секцию отзывов
+                }
+            });
+        });
+
+        // Остальные обработчики (удаление и т.д.)
+        $('.delete-review').click(function() {
+            if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+                const reviewId = $(this).closest('.review-item').data('id');
+                $.post('@Url.Action("DeleteReview", "Account")', {
+                    id: reviewId,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                }, function() {
+                    loadSection('reviews');
+                });
+            }
+        });
+    });
+</script>
