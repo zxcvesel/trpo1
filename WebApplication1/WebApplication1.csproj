@@ -366,6 +366,9 @@
     <Content Include="Views\Reviews\Index.cshtml" />
     <Content Include="Views\Account\LoginOrRegister.cshtml" />
     <Content Include="Views\Account\UserProfile.cshtml" />
+    <Content Include="Views\Account\_ReviewsPartial.cshtml" />
+    <Content Include="Views\Account\_SettingsPartial.cshtml" />
+    <Content Include="Views\Account\_AdsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

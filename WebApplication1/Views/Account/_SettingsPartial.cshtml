@@ -1,0 +1,32 @@
+﻿@model AutoAdsWebApp.Models.User
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Настройки профиля</h5>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("UpdateProfile", "Account", FormMethod.Post, new { id = "settingsForm" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label class="form-label">Логин</label>
+                <input type="text" class="form-control" value="@Model.Login" readonly>
+            </div>
+
+            
+
+            <div class="mb-3">
+                <label class="form-label">Новый пароль</label>
+                <input type="password" name="NewPassword" class="form-control" placeholder="Оставьте пустым, если не хотите менять">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Текущий пароль</label>
+                <input type="password" name="CurrentPassword" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        }
+    </div>
+</div>

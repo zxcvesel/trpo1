@@ -136,6 +136,66 @@ public class AccountController : Controller
         return Json(new { success = true });
     }
 
+    [Authorize]
+    public ActionResult LoadReviews()
+    {
+        var currentUser = db.Users.FirstOrDefault(u => u.Login == User.Identity.Name);
+        if (currentUser == null) return HttpNotFound();
+
+        var model = new ProfileViewModel
+        {
+            Reviews = db.Reviews
+                .Where(r => r.UserId == currentUser.Id)
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new UserReview
+                {
+                    Id = r.Id,
+                    CompanyName = r.Company.Name,
+                    Rating = (int)r.Rating,
+                    Comment = r.Comment,
+                    Date = r.CreatedAt
+                })
+                .ToList(),
+            Companies = db.Companies.ToList()
+        };
+
+        return PartialView("_ReviewsPartial", model);
+    }
+
+    [Authorize]
+    public ActionResult LoadSettings()
+    {
+        var user = db.Users.FirstOrDefault(u => u.Login == User.Identity.Name);
+        if (user == null) return HttpNotFound();
+
+        return PartialView("_SettingsPartial", user);
+    }
+
+    [Authorize]
+    public ActionResult LoadAds()
+    {
+        return PartialView("_AdsPartial");
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public ActionResult UpdateProfile(User updatedUser)
+    {
+        var currentUser = db.Users.FirstOrDefault(u => u.Login == User.Identity.Name);
+        if (currentUser == null) return HttpNotFound();
+
+        
+        if (!string.IsNullOrEmpty(updatedUser.Password))
+        {
+            currentUser.Password = updatedUser.Password; // В реальном проекте хешируем пароль!
+        }
+
+        db.SaveChanges();
+
+        return Json(new { success = true, message = "Профиль успешно обновлен" });
+    }
+
     public ActionResult Logout()
     {
         FormsAuthentication.SignOut();

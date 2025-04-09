@@ -13,17 +13,26 @@
                         <i class="bi bi-person-circle" style="font-size: 4rem; color: #6c757d;"></i>
                     </div>
                     <h4>@User.Identity.Name</h4>
-                    <p class="text-muted">Пользователь</p>
+                    <p class="text-muted">
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span>Администратор</span>
+                        }
+                        else
+                        {
+                            <span>Пользователь</span>
+                        }
+                    </p>
                 </div>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item active">
-                        <i class="bi bi-person me-2"></i>Профиль
-                    </li>
-                    <li class="list-group-item">
+                    <li class="list-group-item nav-item active" data-section="reviews">
                         <i class="bi bi-chat-left-text me-2"></i>Мои отзывы
                     </li>
-                    <li class="list-group-item">
+                    <li class="list-group-item nav-item" data-section="settings">
                         <i class="bi bi-gear me-2"></i>Настройки
+                    </li>
+                    <li class="list-group-item nav-item" data-section="ads">
+                        <i class="bi bi-megaphone me-2"></i>Моя реклама
                     </li>
                     <li class="list-group-item">
                         <a href="@Url.Action("Logout", "Account")" class="text-decoration-none text-dark">
@@ -35,85 +44,11 @@
         </div>
 
         <!-- Основное содержимое -->
-        <div class="col-md-9">
-            <!-- Секция с отзывами пользователя -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Мои отзывы</h5>
-                </div>
-                <div class="card-body">
-                    @if (Model.Reviews.Any())
-                    {
-                        foreach (var review in Model.Reviews)
-                        {
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h5>@review.CompanyName</h5>
-                                        <div class="text-warning">
-                                            @review.Rating.ToString("0.0") <i class="bi bi-star-fill"></i>
-                                        </div>
-                                    </div>
-                                    <p class="mt-2">@review.Comment</p>
-                                    <small class="text-muted">Оставлен: @review.Date.ToString("dd.MM.yyyy")</small>
-                                    <div class="mt-2">
-                                        <button class="btn btn-sm btn-outline-danger delete-review"
-                                                data-id="@review.Id">
-                                            <i class="bi bi-trash"></i> Удалить
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="alert alert-info">
-                            Вы еще не оставили ни одного отзыва.
-                            <a href="@Url.Action("Index", "Companies")" class="alert-link">Найти компанию</a>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Форма добавления нового отзыва -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Добавить отзыв</h5>
-                </div>
-                <div class="card-body">
-                    <form id="addReviewForm">
-                        @Html.AntiForgeryToken()
-                        <div class="mb-3">
-                            <label class="form-label">Компания</label>
-                            <select class="form-select" name="CompanyId" required>
-                                <option value="">Выберите компанию...</option>
-                                @foreach (var company in Model.Companies)
-                                {
-                                    <option value="@company.Id">@company.Name</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Оценка</label>
-                            <select class="form-select" name="Rating" required>
-                                <option value="">Выберите оценку...</option>
-                                <option value="1">1 - Плохо</option>
-                                <option value="2">2 - Удовлетворительно</option>
-                                <option value="3">3 - Хорошо</option>
-                                <option value="4">4 - Очень хорошо</option>
-                                <option value="5">5 - Отлично</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Комментарий</label>
-                            <textarea class="form-control" name="Comment" rows="3" required
-                                      placeholder="Опишите ваш опыт взаимодействия с компанией"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send me-1"></i> Отправить на модерацию
-                        </button>
-                    </form>
+        <div class="col-md-9" id="profileContent">
+            <!-- Сюда будет подгружаться контент -->
+            <div class="text-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
                 </div>
             </div>
         </div>
@@ -146,44 +81,89 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Обработка отправки формы отзыва
-            $('#addReviewForm').submit(function(e) {
-                e.preventDefault();
+            // Загрузка секции
+            function loadSection(section) {
+                $('.nav-item').removeClass('active');
+                $(`[data-section="${section}"]`).addClass('active');
 
-                $.ajax({
-                    url: '@Url.Action("AddReview", "Account")',
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        if (response.success) {
-                            alert('Отзыв отправлен на модерацию!');
-                            location.reload();
-                        }
-                    },
-                    error: function() {
-                        alert('Произошла ошибка при отправке отзыва');
-                    }
+                $('#profileContent').html(`
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+                `);
+
+                $.get(`/Account/Load${section.charAt(0).toUpperCase() + section.slice(1)}`, function(data) {
+                    $('#profileContent').html(data);
+                    initSectionScripts(section);
                 });
-            });
+            }
 
-            // Обработка удаления отзыва
-            $('.delete-review').click(function() {
-                if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
-                    var reviewId = $(this).data('id');
+            // Инициализация скриптов для секции
+            function initSectionScripts(section) {
+                if (section === 'reviews') {
+                    initReviewsScripts();
+                } else if (section === 'settings') {
+                    initSettingsScripts();
+                }
+            }
 
+            // Скрипты для секции отзывов
+            function initReviewsScripts() {
+                $('#addReviewForm').submit(function(e) {
+                    e.preventDefault();
                     $.ajax({
-                        url: '@Url.Action("DeleteReview", "Account")',
+                        url: $(this).attr('action'),
                         type: 'POST',
-                        data: { id: reviewId, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
-                        success: function() {
-                            location.reload();
-                        },
-                        error: function() {
-                            alert('Ошибка при удалении отзыва');
+                        data: $(this).serialize(),
+                        success: function(response) {
+                            if (response.success) {
+                                alert('Отзыв отправлен на модерацию!');
+                                loadSection('reviews');
+                            }
                         }
                     });
-                }
+                });
+
+                $('.delete-review').click(function() {
+                    if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+                        const reviewId = $(this).closest('.review-item').data('id');
+                        $.post('@Url.Action("DeleteReview", "Account")', {
+                            id: reviewId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        }, function() {
+                            loadSection('reviews');
+                        });
+                    }
+                });
+            }
+
+            // Скрипты для секции настроек
+            function initSettingsScripts() {
+                $('#settingsForm').submit(function(e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        type: 'POST',
+                        data: $(this).serialize(),
+                        success: function(response) {
+                            if (response.success) {
+                                alert(response.message);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Обработчики кликов по меню
+            $('.nav-item').click(function() {
+                const section = $(this).data('section');
+                loadSection(section);
             });
+
+            // Загружаем отзывы по умолчанию
+            loadSection('reviews');
         });
     </script>
 }

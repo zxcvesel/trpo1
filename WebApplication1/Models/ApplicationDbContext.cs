@@ -16,5 +16,12 @@ namespace AutoAdsWebApp.Models
 
         
         public DbSet<Review> Reviews { get; set; }
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Review>()
+                .HasRequired(r => r.Company)
+                .WithMany()
+                .HasForeignKey(r => r.CompanyId);
+        }
     }
 }
