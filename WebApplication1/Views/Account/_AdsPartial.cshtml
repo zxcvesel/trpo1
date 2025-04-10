@@ -1,12 +1,71 @@
-﻿@model AutoAdsWebApp.Models.Ad
+﻿@model IEnumerable<AutoAdsWebApp.Models.Ad>
 
-<div class="card shadow-sm">
-    <div class="card-header bg-white">
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Моя реклама</h5>
+        <a href="@Url.Action("Create", "Ads")" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus"></i> Добавить объявление
+        </a>
     </div>
     <div class="card-body">
-        <div class="alert alert-info">
-            Здесь будет отображаться список вашей рекламы. Функционал в разработке.
-        </div>
+        @if (Model.Any())
+        {
+            foreach (var ad in Model)
+            {
+                <div class="card mb-3 ad-item" data-id="@ad.Id">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>@ad.Title</h5>
+                            <span class="badge bg-primary">@ad.Category.Name</span>
+                        </div>
+                        <p class="mt-2">@ad.Description</p>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted">Компания: @ad.Company.Name</small>
+                            <strong>@ad.Price.ToString("N2") руб.</strong>
+                        </div>
+                        <div class="mt-2">
+                            <a href="@Url.Action("Edit", "Ads", new { id = ad.Id })"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Редактировать
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger delete-ad">
+                                <i class="bi bi-trash"></i> Удалить
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">
+                            Опубликовано: @ad.CreatedAt.ToString("dd.MM.yyyy") |
+                            Статус: <span class="@(ad.IsActive ? "text-success" : "text-secondary")">
+                                @(ad.IsActive ? "Активно" : "Не активно")
+                            </span>
+                        </small>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info">
+                У вас пока нет рекламных объявлений.
+                <a href="@Url.Action("Create", "Ads")" class="alert-link">Создать объявление</a>
+            </div>
+        }
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('.delete-ad').click(function() {
+            if (confirm('Вы уверены, что хотите удалить это объявление?')) {
+                const adId = $(this).closest('.ad-item').data('id');
+                $.post('@Url.Action("DeleteAd", "Account")', {
+                    id: adId,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                }).done(function() {
+                    loadSection('ads');
+                });
+            }
+        });
+    });
+</script>

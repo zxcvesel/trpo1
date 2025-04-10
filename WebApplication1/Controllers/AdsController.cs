@@ -90,11 +90,15 @@ namespace AutoAdsWebApp.Controllers
         // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
         // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,CompanyId,Title,Description,CategoryId,Price")] Ad ad)
+        public ActionResult Create([Bind(Include = "CompanyId,Title,Description,CategoryId,Price")] Ad ad)
         {
             if (ModelState.IsValid)
             {
+                var currentUser = db.Users.FirstOrDefault(u => u.Login == User.Identity.Name);
+                ad.UserId = currentUser.Id;
+
                 db.Ads.Add(ad);
                 db.SaveChanges();
                 return RedirectToAction("Index");

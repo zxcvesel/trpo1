@@ -55,6 +55,25 @@
     </div>
 </div>
 
+<!-- Модальное окно для подтверждения удаления -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Вы уверены, что хотите удалить это объявление?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Styles {
     <style>
         .list-group-item {
@@ -75,15 +94,25 @@
         .text-warning {
             color: #ffc107 !important;
         }
+
+        .ad-card {
+            transition: transform 0.2s;
+        }
+
+            .ad-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
     </style>
 }
 
 @section Scripts {
     <script>
         $(document).ready(function() {
+            let currentAdId = null;
+
             // Загрузка секции
             function loadSection(section) {
-                // Блокируем повторные запросы
                 if ($('#profileContent').hasClass('loading')) return;
                 $('#profileContent').addClass('loading');
 
@@ -99,10 +128,11 @@
                 `);
 
                 $.get(`/Account/Load${section.charAt(0).toUpperCase() + section.slice(1)}`)
-                    .done(function (data) {
+                    .done(function(data) {
                         $('#profileContent').html(data).removeClass('loading');
+                        initSectionScripts(section);
                     })
-                    .fail(function (xhr) {
+                    .fail(function(xhr) {
                         let errorMsg = "Ошибка загрузки данных";
                         if (xhr.responseText) {
                             try {
@@ -115,7 +145,7 @@
                         $('#profileContent').html(`
                             <div class="alert alert-danger">
                                 ${errorMsg}
-                                <button onclick="loadSection('${section}')" 
+                                <button onclick="loadSection('${section}')"
                                         class="btn btn-sm btn-outline-secondary ms-2">
                                     Повторить
                                 </button>
@@ -130,6 +160,8 @@
                     initReviewsScripts();
                 } else if (section === 'settings') {
                     initSettingsScripts();
+                } else if (section === 'ads') {
+                    initAdsScripts();
                 }
             }
 
@@ -150,7 +182,6 @@
                     });
                 });
 
-                // Обработчик кнопки редактирования
                 $(document).on('click', '.edit-review', function() {
                     const reviewId = $(this).data('review-id');
                     const reviewItem = $('#review-' + reviewId);
@@ -161,7 +192,6 @@
                     $('#editRatingValue').val(rating);
                     $('#editComment').val(comment);
 
-                    // Установка звезд рейтинга
                     $('.edit-rating-star').removeClass('active');
                     $('.edit-rating-star').each(function() {
                         if ($(this).data('value') <= rating) {
@@ -172,10 +202,8 @@
                     $('#editReviewModal').modal('show');
                 });
 
-                // Сохранение изменений
                 $('#saveEditReview').click(function() {
                     const formData = $('#editReviewForm').serialize();
-
                     $.post('@Url.Action("EditReview", "Account")', formData, function(response) {
                         if (response.success) {
                             alert(response.message);
@@ -184,7 +212,6 @@
                         }
                     });
                 });
-
 
                 $('.delete-review').click(function() {
                     if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
@@ -212,6 +239,26 @@
                                 alert(response.message);
                             }
                         }
+                    });
+                });
+            }
+
+            // Скрипты для секции рекламы
+            function initAdsScripts() {
+                // Обработчик кнопки удаления
+                $(document).on('click', '.delete-ad', function() {
+                    currentAdId = $(this).closest('.ad-card').data('id');
+                    $('#confirmDeleteModal').modal('show');
+                });
+
+                // Подтверждение удаления
+                $('#confirmDeleteBtn').click(function() {
+                    $('#confirmDeleteModal').modal('hide');
+                    $.post('@Url.Action("DeleteAd", "Account")', {
+                        id: currentAdId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    }).done(function() {
+                        loadSection('ads');
                     });
                 });
             }

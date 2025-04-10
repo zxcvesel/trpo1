@@ -18,6 +18,12 @@ namespace AutoAdsWebApp.Models
         public DbSet<Review> Reviews { get; set; }
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Ad>()
+                .HasRequired(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .WillCascadeOnDelete(false);
+
             modelBuilder.Entity<Review>()
                 .HasRequired(r => r.Company)
                 .WithMany()

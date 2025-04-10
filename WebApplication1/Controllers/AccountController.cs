@@ -1,5 +1,6 @@
 ﻿using AutoAdsWebApp.Models;
 using System;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
 using System.Web.Security;
@@ -174,7 +175,33 @@ public class AccountController : Controller
     [Authorize]
     public ActionResult LoadAds()
     {
-        return PartialView("_AdsPartial");
+        var currentUser = db.Users.FirstOrDefault(u => u.Login == User.Identity.Name);
+        if (currentUser == null) return HttpNotFound();
+
+        var ads = db.Ads
+            .Where(a => a.UserId == currentUser.Id)
+            .OrderByDescending(a => a.CreatedAt)
+            .Include(a => a.Company)
+            .Include(a => a.Category)
+            .ToList();
+
+        return PartialView("_AdsPartial", ads);
+    }
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public ActionResult DeleteAd(int id)
+    {
+        var currentUser = db.Users.FirstOrDefault(u => u.Login == User.Identity.Name);
+        var ad = db.Ads.Find(id);
+
+        if (ad == null || ad.UserId != currentUser?.Id)
+            return Json(new { success = false, error = "Объявление не найдено или нет прав" });
+
+        db.Ads.Remove(ad);
+        db.SaveChanges();
+
+        return Json(new { success = true });
     }
 
     [HttpPost]
