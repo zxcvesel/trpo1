@@ -42,7 +42,11 @@
             {
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm">
-                        <img src="@Url.Content("~/images/" + item.Image)" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@item.Name" onerror="this.src='@Url.Content("~/images/default-company.png")'" />
+                        <img src="@Url.Content("~/images/" + (item.Image ?? "default-company.jpg"))"
+                             class="card-img-top"
+                             style="height: 200px; object-fit: cover;"
+                             alt="@item.Name"
+                             onerror="this.src='@Url.Content("~/images/default-company.jpg")'">
                         <div class="card-body">
                             <h5 class="card-title">@item.Name</h5>
                             <div class="d-flex justify-content-between">
@@ -54,7 +58,7 @@
                                         }
                                     </span>
                                 </p>
-                                <p class="card-text text-muted">@item.Reviews </p>
+                                <p class="card-text text-muted">@item.Reviews</p>
                             </div>
                         </div>
                         <div class="card-footer d-flex justify-content-between">

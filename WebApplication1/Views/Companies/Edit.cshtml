@@ -6,11 +6,10 @@
 
 <h2>Edit</h2>
 
-
-@using (Html.BeginForm())
+@using (Html.BeginForm("Edit", "Companies", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         <h4>Company</h4>
         <hr />
@@ -42,8 +41,29 @@
         </div>
 
         <div class="form-group">
+            @Html.Label("Текущее изображение", new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @if (!string.IsNullOrEmpty(Model.Image))
+                {
+                    <img src="@Url.Content("~/images/" + Model.Image)" class="img-thumbnail" style="max-height: 100px;" />
+                }
+                else
+                {
+                    <span>Нет изображения</span>
+                }
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.Label("Новое изображение", new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <input type="file" name="imageFile" class="form-control" accept=".jpg,.jpeg,.png" />
+            </div>
+        </div>
+
+        <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </div>
     </div>
