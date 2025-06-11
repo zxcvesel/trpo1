@@ -1,0 +1,353 @@
+Форма 1
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Test
+{
+    public partial class Form1 : Form
+    {
+        private readonly hypeEntities db = new hypeEntities();
+        private int editingCardID = 0;
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            LoadCards();
+        }
+
+       
+        private void LoadCards()
+        {
+            flowLayoutPanel1.Controls.Clear();
+            foreach (var partner in db.Partners.ToList())
+            {
+                var type = partner.Partners_type.Type.ToString();
+                var name = partner.Partners_name.Name.ToString();
+                var director = partner.Director.ToString();
+                var email = partner.ParnterEmail.ToString();
+                var phone = partner.Partner_phone.ToString();
+                var address = partner.PartnerAdress.ToString();
+                var rating = partner.Rating.ToString();
+
+                var partnerId = partner.Id.ToString();
+                var skidka = getSkidka(partnerId);
+
+
+               
+
+                UserControl1 partner1 = new UserControl1();
+                partner1.setData(type, name, director, phone, "Рейтинг: " + rating, skidka + " %", partner.Id);
+                flowLayoutPanel1.Controls.Add(partner1);
+            }
+        }
+
+
+        private int getSkidka(string partnerId)
+        {
+            int id = int.Parse(partnerId);
+
+            var count = db.Partner_products
+           .Where(p => p.PartnerName == id)
+           .Sum(p => (int?)p.ProductCount) ?? 0; // учитываем null
+
+
+            if(count < 10000)
+            {
+                return 0;
+            }
+            if(count > 10000 && count < 50000)
+            {
+                return 5;
+            }
+            if(count > 50000 && count < 300000)
+            {
+                return 10;
+            }
+            if(count > 300000)
+            {
+                return 15;
+            }
+            else
+            {
+                return 0;
+            }
+
+            
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Form2 form2 = new Form2();
+            form2.Show();
+            this.Hide();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+          
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();
+        }
+    }
+}
+
+-------------------------------------------------------------------------------------------------
+Форма 2
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Test
+{
+    public partial class Form2 : Form
+    {
+        private readonly hypeEntities db = new hypeEntities();
+
+        public Form2()
+        {
+            InitializeComponent();
+        }
+
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            // Проверка на пустые поля
+            if (string.IsNullOrWhiteSpace(textBox2.Text) ||
+                string.IsNullOrWhiteSpace(textBox3.Text) ||
+                string.IsNullOrWhiteSpace(textBox4.Text) ||
+                string.IsNullOrWhiteSpace(textBox5.Text) ||
+                string.IsNullOrWhiteSpace(textBox6.Text) ||
+                string.IsNullOrWhiteSpace(textBox7.Text) ||
+                string.IsNullOrWhiteSpace(textBox8.Text) ||
+                comboBox1.SelectedIndex < 0)
+            {
+                MessageBox.Show("Заполните все обязательные поля!");
+                return;
+            }
+
+            // Подтверждение
+            var result = MessageBox.Show("Добавить?", "Подтверждение", MessageBoxButtons.YesNo);
+            if (result != DialogResult.Yes)
+                return;
+
+            // Создание и сохранение имени партнёра
+            Partners_name partners_Name = new Partners_name
+            {
+                Name = textBox2.Text
+            };
+            db.Partners_name.Add(partners_Name);
+            db.SaveChanges(); // сохраняем, чтобы получить ID
+            int id = partners_Name.Id;
+
+            // Создание партнёра
+            Partner partner = new Partner
+            {
+                PartnerType = comboBox1.SelectedIndex +1,
+                PartnerName = id,
+                Director = textBox3.Text,
+                ParnterEmail = textBox4.Text,
+                Partner_phone = textBox5.Text,
+                PartnerAdress = textBox6.Text,
+                INN = double.TryParse(textBox7.Text, out var inn) ? (double?)inn : null,
+                Rating = int.TryParse(textBox8.Text, out var rating) ? (int?)rating : null
+            };
+
+            db.Partners.Add(partner);
+            db.SaveChanges();
+
+            MessageBox.Show("Партнёр успешно добавлен.");
+        }
+
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Form1 form = new Form1();
+            form.Show();
+            this.Hide();
+        }
+
+        private void Form2_Load(object sender, EventArgs e)
+        {
+            comboBox1.Items.AddRange(db.Partners_type.Select(u => u.Type.ToString()).ToArray()); //добавление типа партнеров
+
+        }
+
+        private void Form2_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.Close();
+        }
+    }
+}
+
+------------------------------------------------------------------------------------------------------------------------------------
+Форма 3
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
+namespace Test
+{
+    public partial class Form3 : Form
+    {
+        private readonly hypeEntities db = new hypeEntities();
+        private Partner partner;
+
+        public Form3 (int partnerId)
+        {
+            InitializeComponent();
+            partner = db.Partners.Include("Partners_name").FirstOrDefault(p => p.Id == partnerId);
+        }
+
+        private void Form3_Load(object sender, EventArgs e)
+        {
+            if (partner == null)
+            {
+                MessageBox.Show("Партнёр не найден.");
+                Close();
+                return;
+            }
+
+            comboBox1.Items.AddRange(db.Partners_type.Select(t => t.Type).ToArray());
+
+
+            textBox2.Text = partner.Partners_name.Name;
+            comboBox1.SelectedIndex = (int)(partner.PartnerType - 1);
+            textBox3.Text = partner.Director;
+            textBox4.Text = partner.ParnterEmail;
+            textBox5.Text = partner.Partner_phone;
+            textBox6.Text = partner.PartnerAdress;
+            textBox7.Text = partner.INN?.ToString();
+            textBox8.Text = partner.Rating?.ToString();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            partner.Partners_name.Name = textBox2.Text;
+            partner.PartnerType = comboBox1.SelectedIndex +1;
+            partner.Director = textBox3.Text;
+            partner.ParnterEmail = textBox4.Text;
+            partner.Partner_phone = textBox5.Text;
+            partner.PartnerAdress = textBox6.Text;
+            partner.INN = double.TryParse(textBox7.Text, out var inn) ? inn : 0;
+            partner.Rating = int.TryParse(textBox8.Text, out var rating) ? rating : 0;
+
+            db.SaveChanges();
+
+            MessageBox.Show("Изменения сохранены.");
+            Form1 main = new Form1();
+            main.Show();
+            this.Close();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Form1 form = new Form1();
+            form.Show();
+            this.Close();
+        }
+
+        
+    }
+}
+
+----------------------------------------------------------------------------------------------
+ЮзерКонтрол 
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Test
+{
+    public partial class UserControl1 : UserControl
+    {
+        public UserControl1()
+        {
+            InitializeComponent();
+            foreach (Control control in this.Controls)
+            {
+                control.Click += UserControl1_Click;
+            }
+        }
+
+        public int PartnerId { get; set; }
+
+
+        public void setData(string type, string partner, string director, string phone, string rating, string percent, int id)
+        {
+            label1.Text = type;
+            label2.Text = partner;
+            label3.Text = director;
+            label4.Text = phone;
+            label5.Text = rating;
+            label6.Text = percent;
+            PartnerId = id;
+        }
+
+        private void UserControl1_Click(object sender, EventArgs e)
+        {
+            Form3 form = new Form3(PartnerId);
+            form.Show();
+            Form parentForm = this.FindForm();
+            parentForm.Hide(); // спрятать Form1
+        }
+    }
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+конфиг
+
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <configSections>
+    <!-- For more information on Entity Framework configuration, visit http://go.microsoft.com/fwlink/?LinkID=237468 -->
+    <section name="entityFramework" type="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+  </configSections>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.7.2" />
+  </startup>
+  <connectionStrings>
+    <add name="hypeEntities" connectionString="metadata=res://*/Model1.csdl|res://*/Model1.ssdl|res://*/Model1.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=DESKTOP-VD5TSL9;initial catalog=hype;integrated security=True;trustservercertificate=True;MultipleActiveResultSets=True;App=EntityFramework&quot;" providerName="System.Data.EntityClient" />
+  </connectionStrings>
+  <entityFramework>
+    <defaultConnectionFactory type="System.Data.Entity.Infrastructure.SqlConnectionFactory, EntityFramework" />
+    <providers>
+      <provider invariantName="System.Data.SqlClient" type="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer" />
+    </providers>
+  </entityFramework>
+</configuration>
